@@ -1,0 +1,2 @@
+"""RobloxFriendBot package initializer."""
+

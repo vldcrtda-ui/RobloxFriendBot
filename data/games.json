@@ -1,0 +1,12 @@
+[
+  {"name": "Blox Fruits", "alias": "blox_fruits", "category": "adventure"},
+  {"name": "Brookhaven 🏡RP", "alias": "brookhaven", "category": "roleplay"},
+  {"name": "Adopt Me!", "alias": "adopt_me", "category": "social"},
+  {"name": "BedWars", "alias": "bedwars", "category": "pvp"},
+  {"name": "DOORS", "alias": "doors", "category": "horror"},
+  {"name": "Arsenal", "alias": "arsenal", "category": "fps"},
+  {"name": "Murder Mystery 2", "alias": "mm2", "category": "mystery"},
+  {"name": "Pet Simulator X", "alias": "pet_simulator_x", "category": "simulator"},
+  {"name": "Tower of Hell", "alias": "tower_of_hell", "category": "obby"},
+  {"name": "Phantom Forces", "alias": "phantom_forces", "category": "fps"}
+]
