@@ -136,12 +136,48 @@ async def process_language(
         await callback.message.answer(translator.t("games_empty", locale))
         return
 
-    game_payload = [{"id": game.id, "name": game.name} for game in games]
+    game_payload = [{"id": game.id, "name": game.name, "alias": game.alias} for game in games]
     await state.update_data(selected_games=[], games_catalog=game_payload)
     await state.set_state(RegisterState.wait_games)
     await callback.message.answer(
         translator.t("ask_games", locale),
         reply_markup=games_keyboard(translator, locale, game_payload, set()),
+    )
+
+
+@router.message(RegisterState.wait_games)
+async def search_games(
+    message: Message,
+    state: FSMContext,
+    translator: Translator,
+    settings: Settings,
+) -> None:
+    data = await state.get_data()
+    locale = data.get("language") or data.get("locale") or resolve_locale(message, settings.default_language)
+    if not message.text:
+        await message.answer(translator.t("ask_games", locale))
+        return
+
+    query = message.text.strip().lower()
+    games_catalog = data.get("games_catalog", [])
+    selected = set(data.get("selected_games", []))
+
+    matches = []
+    for game in games_catalog:
+        name = str(game.get("name", "")).lower()
+        alias = str(game.get("alias", "")).lower()
+        if query in name or (alias and query in alias):
+            matches.append(game)
+        if len(matches) >= 20:
+            break
+
+    if not matches:
+        await message.answer(translator.t("games_search_none", locale))
+        return
+
+    await message.answer(
+        translator.t("games_search_found", locale, count=len(matches)),
+        reply_markup=games_keyboard(translator, locale, matches, selected),
     )
 
 
