@@ -20,6 +20,7 @@ from bot.services.profile_messages import send_profile_message
 from bot.services.users import get_user, upsert_user
 from bot.utils.i18n import AVAILABLE_LOCALES, Translator
 from bot.utils.locale import resolve_locale
+from bot.utils.telegram import safe_delete
 
 router = Router(name="register")
 
@@ -36,6 +37,8 @@ async def cmd_start(
     translator: Translator,
     settings: Settings,
 ) -> None:
+    if message.text and message.text.startswith("/"):
+        await safe_delete(message)
     await state.clear()
     locale = resolve_locale(message, default=settings.default_language)
 
@@ -63,6 +66,8 @@ async def cancel(
     translator: Translator,
     settings: Settings,
 ) -> None:
+    if message.text and message.text.startswith("/"):
+        await safe_delete(message)
     locale = resolve_locale(message, settings.default_language)
     await state.clear()
     await message.answer(translator.t("cancel", locale))

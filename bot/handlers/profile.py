@@ -12,6 +12,7 @@ from bot.services.profile_messages import send_profile_message
 from bot.services.users import delete_user, get_user, touch_user
 from bot.utils.i18n import Translator
 from bot.utils.locale import resolve_locale
+from bot.utils.telegram import safe_delete
 
 router = Router(name="profile")
 
@@ -25,6 +26,8 @@ async def profile(
     state: FSMContext,
 ) -> None:
     base_locale = resolve_locale(message, settings.default_language)
+    if message.text and message.text.startswith("/"):
+        await safe_delete(message)
     async with session_scope(session_factory) as session:
         user = await get_user(session, message.from_user.id)  # type: ignore[arg-type]
         if user:
