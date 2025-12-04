@@ -46,6 +46,14 @@ async def cmd_start(
         existing = await get_user(session, message.from_user.id)  # type: ignore[arg-type]
     if existing:
         await message.answer(translator.t("already_registered", locale))
+        await send_profile_message(
+            message,
+            existing,
+            translator,
+            existing.languages[0] if existing.languages else locale,
+        )
+        await message.answer(translator.t("main_menu_hint", locale))
+        return
 
     await state.update_data(locale=locale)
     await message.answer(
