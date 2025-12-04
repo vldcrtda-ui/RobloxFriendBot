@@ -4,7 +4,7 @@ import re
 from difflib import SequenceMatcher
 
 from aiogram import F, Router
-from aiogram.filters import Command, CommandStart
+from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.exc import IntegrityError
@@ -30,7 +30,14 @@ MAX_GAMES = 5
 
 
 @router.message(
-    (RegisterState.wait_nick | RegisterState.wait_age | RegisterState.wait_language | RegisterState.wait_games | RegisterState.wait_bio | RegisterState.wait_photo),
+    StateFilter(
+        RegisterState.wait_nick,
+        RegisterState.wait_age,
+        RegisterState.wait_language,
+        RegisterState.wait_games,
+        RegisterState.wait_bio,
+        RegisterState.wait_photo,
+    ),
     F.text.startswith("/"),
 )
 async def command_during_onboarding(
@@ -43,6 +50,7 @@ async def command_during_onboarding(
     locale = resolve_locale(message, settings.default_language)
     text = (message.text or "").strip()
     await state.clear()
+    await safe_delete(message)
 
     if text.startswith("/start"):
         await cmd_start(message, state, session_factory, translator, settings)
@@ -64,7 +72,7 @@ async def command_during_onboarding(
     await message.answer(translator.t("cancel", locale))
 
 
-@router.message(CommandStart())
+@router.message(CommandStart(), StateFilter(None))
 async def cmd_start(
     message: Message,
     state: FSMContext,
