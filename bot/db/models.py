@@ -2,7 +2,20 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, Integer, String, Table, Text, UniqueConstraint, func
+from sqlalchemy import (
+    ARRAY,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    Text,
+    UniqueConstraint,
+    func,
+    BigInteger,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
@@ -18,7 +31,7 @@ user_games_table = Table(
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True)  # Telegram user id
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)  # Telegram user id
     username: Mapped[str | None] = mapped_column(String(255), nullable=True)
     roblox_nick: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     age: Mapped[int] = mapped_column(Integer, nullable=False)
