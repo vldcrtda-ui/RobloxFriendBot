@@ -47,6 +47,8 @@ async def command_during_onboarding(
     translator: Translator,
     settings: Settings,
 ) -> None:
+    if not message.from_user or message.from_user.is_bot:
+        return
     locale = resolve_locale(message, settings.default_language)
     text = (message.text or "").strip()
     await state.clear()
@@ -80,6 +82,8 @@ async def cmd_start(
     translator: Translator,
     settings: Settings,
 ) -> None:
+    if not message.from_user or message.from_user.is_bot:
+        return
     if message.text and message.text.startswith("/"):
         await safe_delete(message)
     await state.clear()
