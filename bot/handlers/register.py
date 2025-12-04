@@ -29,6 +29,41 @@ MAX_BIO_LENGTH = 300
 MAX_GAMES = 5
 
 
+@router.message(
+    (RegisterState.wait_nick | RegisterState.wait_age | RegisterState.wait_language | RegisterState.wait_games | RegisterState.wait_bio | RegisterState.wait_photo),
+    F.text.startswith("/"),
+)
+async def command_during_onboarding(
+    message: Message,
+    state: FSMContext,
+    session_factory: async_sessionmaker[AsyncSession],
+    translator: Translator,
+    settings: Settings,
+) -> None:
+    locale = resolve_locale(message, settings.default_language)
+    text = (message.text or "").strip()
+    await state.clear()
+
+    if text.startswith("/start"):
+        await cmd_start(message, state, session_factory, translator, settings)
+        return
+    if text.startswith("/profile"):
+        async with session_scope(session_factory) as session:
+            user = await get_user(session, message.from_user.id)  # type: ignore[arg-type]
+        if user:
+            await send_profile_message(
+                message,
+                user,
+                translator,
+                user.languages[0] if user.languages else locale,
+            )
+        else:
+            await message.answer(translator.t("profile_missing", locale))
+        return
+
+    await message.answer(translator.t("cancel", locale))
+
+
 @router.message(CommandStart())
 async def cmd_start(
     message: Message,
