@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from difflib import SequenceMatcher
 
 from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
@@ -162,14 +163,29 @@ async def search_games(
     games_catalog = data.get("games_catalog", [])
     selected = set(data.get("selected_games", []))
 
-    matches = []
+    def similarity(value: str) -> float:
+        if not value:
+            return 0.0
+        return SequenceMatcher(None, query, value).ratio()
+
+    scored = []
     for game in games_catalog:
         name = str(game.get("name", "")).lower()
         alias = str(game.get("alias", "")).lower()
-        if query in name or (alias and query in alias):
-            matches.append(game)
-        if len(matches) >= 20:
-            break
+        score = max(similarity(name), similarity(alias))
+        if query in name:
+            score += 0.35
+        if alias and query in alias:
+            score += 0.25
+        if name.startswith(query):
+            score += 0.2
+        if alias and alias.startswith(query):
+            score += 0.1
+        scored.append((score, game))
+
+    scored = [item for item in scored if item[0] >= 0.2]
+    scored.sort(key=lambda x: x[0], reverse=True)
+    matches = [game for _, game in scored[:20]]
 
     if not matches:
         await message.answer(translator.t("games_search_none", locale))
