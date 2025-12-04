@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import Iterable
+import logging
 
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,12 +11,18 @@ from sqlalchemy.orm import selectinload
 from bot.db.models import Game, User
 from bot.services.schemas import RegistrationData
 
+logger = logging.getLogger(__name__)
+
 
 async def get_user(session: AsyncSession, tg_id: int) -> User | None:
-    result = await session.execute(
-        select(User).where(User.id == tg_id).options(selectinload(User.games))
-    )
-    return result.scalar_one_or_none()
+    try:
+        result = await session.execute(
+            select(User).where(User.id == tg_id).options(selectinload(User.games))
+        )
+        return result.scalar_one_or_none()
+    except Exception:
+        logger.exception("Failed to get user from DB", extra={"tg_id": tg_id})
+        return None
 
 
 async def upsert_user(session: AsyncSession, payload: RegistrationData) -> User:
